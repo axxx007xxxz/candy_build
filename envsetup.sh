@@ -25,13 +25,14 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - godir:     Go to the directory containing a file.
 - aospremote: Add git remote for matching AOSP repository
 - cafremote: Add git remote for matching CodeAurora repository.
-- mka:       Builds using SCHED_BATCH on all processors
+- mka:       Builds using SCHED_BATCH on all processors.
 - mkap:      Builds the module(s) using mka and pushes them to the device.
 - cmka:      Cleans and builds using mka.
-- reposync:  Parallel repo sync using ionice and SCHED_BATCH
+- reposync:  Parallel repo sync using ionice and SCHED_BATCH.
+- repolastsync: Prints date and time of last repo sync.
 - installboot: Installs a boot.img to the connected device.
 - installrecovery: Installs a recovery.img to the connected device.
-- repodiff:  Diff 2 different branches or tags within the same repo
+- repodiff:  Diff 2 different branches or tags within the same repo.
 
 Environment options:
 - SANITIZE_HOST: Set to 'true' to use ASAN for all host modules. Note that
@@ -1872,6 +1873,13 @@ function cmka() {
         mka clean
         mka
     fi
+}
+
+function repolastsync() {
+    RLSPATH="$ANDROID_BUILD_TOP/.repo/.repo_fetchtimes.json"
+    RLSLOCAL=$(date -d "$(stat -c %z $RLSPATH)" +"%e %b %Y, %T %Z")
+    RLSUTC=$(date -d "$(stat -c %z $RLSPATH)" -u +"%e %b %Y, %T %Z")
+    echo "Last repo sync: $RLSLOCAL / $RLSUTC"
 }
 
 function reposync() {
