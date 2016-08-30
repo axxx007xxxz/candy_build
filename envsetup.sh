@@ -142,13 +142,13 @@ function check_product()
         return
     fi
 
-    if (echo -n $1 | grep -q -e "^turbo_") ; then
-       TURBO_BUILD=$(echo -n $1 | sed -e 's/^turbo_//g')
-       export BUILD_NUMBER=$((date +%s%N ; echo $TURBO_BUILD; hostname) | openssl sha1 | sed -e 's/.*=//g; s/ //g' | cut -c1-10)
+    if (echo -n $1 | grep -q -e "^candy_") ; then
+       CANDY_BUILD=$(echo -n $1 | sed -e 's/^candy_//g')
+       export BUILD_NUMBER=$((date +%s%N ; echo $CANDY_BUILD; hostname) | openssl sha1 | sed -e 's/.*=//g; s/ //g' | cut -c1-10)
     else
-       TURBO_BUILD=
+       CANDY_BUILD=
     fi
-    export TURBO_BUILD
+    export CANDY_BUILD
 
         TARGET_PRODUCT=$1 \
         TARGET_BUILD_VARIANT= \
@@ -559,7 +559,7 @@ function print_lunch_menu()
     echo
     echo "You're building on" $uname
     echo
-    if [ "z${TURBO_DEVICES_ONLY}" != "z" ]; then
+    if [ "z${CANDY_DEVICES_ONLY}" != "z" ]; then
        echo "Breakfast menu... pick a combo:"
     else
        echo "Lunch menu... pick a combo:"
@@ -573,7 +573,7 @@ function print_lunch_menu()
         i=$(($i+1))
     done | column
 
-    if [ "z${TURBO_DEVICES_ONLY}" != "z" ]; then
+    if [ "z${CANDY_DEVICES_ONLY}" != "z" ]; then
        echo "... and don't forget the bacon!"
     fi
 
@@ -596,10 +596,10 @@ function breakfast()
 {
     target=$1
     local variant=$2
-    TURBO_DEVICES_ONLY="true"
+    CANDY_DEVICES_ONLY="true"
     unset LUNCH_MENU_CHOICES
     add_lunch_combo full-eng
-    for f in `/bin/ls vendor/turbo/vendorsetup.sh 2> /dev/null`
+    for f in `/bin/ls vendor/candy/vendorsetup.sh 2> /dev/null`
         do
             echo "including $f"
             . $f
@@ -615,11 +615,11 @@ function breakfast()
             # A buildtype was specified, assume a full device name
             lunch $target
         else
-            # This is probably just the Turbo model name
+            # This is probably just the Candy model name
             if [ -z "$variant" ]; then
                 variant="userdebug"
             fi
-            lunch turbo_$target-$variant
+            lunch candy_$target-$variant
         fi
     fi
     return $?
@@ -680,7 +680,7 @@ function lunch()
 
     if [ $? -ne 0 ]
     then
-       # if we can't find a product, try to grab it off the Turbo github
+       # if we can't find a product, try to grab it off the Candy github
        T=$(gettop)
        pushd $T > /dev/null
        build/tools/roomservice.py $product
@@ -790,8 +790,8 @@ function tapas()
 function eat()
 {
     if [ "$OUT" ] ; then
-        MODVERSION=$(get_build_var TURBO_VERSION)
-        ZIPFILE=turbo-$MODVERSION.zip
+        MODVERSION=$(get_build_var CANDY_VERSION)
+        ZIPFILE=candy-$MODVERSION.zip
         ZIPPATH=$OUT/$ZIPFILE
         if [ ! -f $ZIPPATH ] ; then
             echo "Nothing to eat"
@@ -806,7 +806,7 @@ function eat()
             done
             echo "Device Found.."
         fi
-    if (adb shell getprop ro.turbo.device | grep -q "$TURBO_BUILD");
+    if (adb shell getprop ro.candy.device | grep -q "$CANDY_BUILD");
     then
         # if adbd isn't root we can't write to /cache/recovery/
         adb root
@@ -828,7 +828,7 @@ EOF
     fi
     return $?
     else
-        echo "The connected device does not appear to be $TURBO_BUILD, run away!"
+        echo "The connected device does not appear to be $CANDY_BUILD, run away!"
     fi
 }
 
@@ -1824,7 +1824,7 @@ function installboot()
     sleep 1
     adb wait-for-online shell mount /system 2>&1 > /dev/null
     adb wait-for-online remount
-    if (adb shell getprop ro.turbo.device | grep -q "$TURBO_BUILD");
+    if (adb shell getprop ro.candy.device | grep -q "$CANDY_BUILD");
     then
         adb push $OUT/boot.img /cache/
         for i in $OUT/system/lib/modules/*;
@@ -1835,7 +1835,7 @@ function installboot()
         adb shell chmod 644 /system/lib/modules/*
         echo "Installation complete."
     else
-        echo "The connected device does not appear to be $TURBO_BUILD, run away!"
+        echo "The connected device does not appear to be $CANDY_BUILD, run away!"
     fi
 }
 
@@ -1869,13 +1869,13 @@ function installrecovery()
     sleep 1
     adb wait-for-online shell mount /system 2>&1 >> /dev/null
     adb wait-for-online remount
-    if (adb shell getprop ro.turbo.device | grep -q "$TURBO_BUILD");
+    if (adb shell getprop ro.candy.device | grep -q "$CANDY_BUILD");
     then
         adb push $OUT/recovery.img /cache/
         adb shell dd if=/cache/recovery.img of=$PARTITION
         echo "Installation complete."
     else
-        echo "The connected device does not appear to be $TURBO_BUILD, run away!"
+        echo "The connected device does not appear to be $CANDY_BUILD, run away!"
     fi
 }
 
@@ -1996,7 +1996,7 @@ function dopush()
         echo "Device Found."
     fi
 
-    if (adb shell getprop ro.turbo.device | grep -q "$TURBO_BUILD") || [ "$FORCE_PUSH" = "true" ];
+    if (adb shell getprop ro.candy.device | grep -q "$CANDY_BUILD") || [ "$FORCE_PUSH" = "true" ];
     then
     # retrieve IP and PORT info if we're using a TCP connection
     TCPIPPORT=$(adb devices | egrep '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+[^0-9]+' \
@@ -2107,7 +2107,7 @@ EOF
     rm -f $OUT/.log
     return 0
     else
-        echo "The connected device does not appear to be $TURBO_BUILD, run away!"
+        echo "The connected device does not appear to be $CANDY_BUILD, run away!"
     fi
 }
 
@@ -2120,7 +2120,7 @@ alias tmkap='dopush tmka'
 function fixup_common_out_dir() {
     common_out_dir=$(get_build_var OUT_DIR)/target/common
     target_device=$(get_build_var TARGET_DEVICE)
-    if [ ! -z $TURBO_FIXUP_COMMON_OUT ]; then
+    if [ ! -z $CANDY_FIXUP_COMMON_OUT ]; then
         if [ -d ${common_out_dir} ] && [ ! -L ${common_out_dir} ]; then
             mv ${common_out_dir} ${common_out_dir}-${target_device}
             ln -s ${common_out_dir}-${target_device} ${common_out_dir}
